@@ -45,6 +45,9 @@ function selectIssue(issue) {
   document.querySelector('#selected-issue-title').textContent = issue.title;
   const viewLink = document.querySelector('#selected-issue-view');
   viewLink.href = issue.pdf;
+  const pdfViewer = document.querySelector('#issue-pdf-viewer');
+  pdfViewer.src = issue.pdf;
+  pdfViewer.title = `${issue.title} PDF 읽기`;
   document.querySelector('#download-formats').innerHTML = issue.formats.map(file => `<a class="button" href="${file.href}" download="${file.download}">${file.label} 다운로드</a>`).join('');
 }
 
