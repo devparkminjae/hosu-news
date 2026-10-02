@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="이호수의 일상을 기록하는 신문, 월간이호수">
+  <title>월간이호수</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="header">
+    <a class="logo" href="#intro" aria-label="월간이호수 신문사 소개">월간이호수</a>
+    <nav aria-label="주 메뉴">
+      <a class="tab active" href="#intro" data-tab="intro">신문사 소개</a>
+      <a class="tab" href="#issues" data-tab="issues">간행본</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="panel active" id="intro">
+      <p class="kicker">MONTHLY LEE HOSU</p>
+      <h1>이호수의 일상,<br>처음부터 끝까지 담다.</h1>
+      <p class="lead">월간이호수는 한 사람의 하루와 생각을 기록하는 작은 신문입니다.<br>소소한 순간을 글과 사진으로 모아 간행본으로 전합니다.</p>
+      <div class="rule"></div>
+      <h2>신문사 소개</h2>
+      <p class="body-copy">저희 월간이호수는 이호수의 친구 박민재와 박민재가 발로 뛰며 열심히 만든 신문입니다.</p>
+      <p class="body-copy">이 사이트에서는 발행된 간행본을 온라인으로 읽거나 PDF 파일로 내려받을 수 있습니다.</p>
+      <a class="plain-link" href="#issues" data-open-tab="issues">간행본 보기 <span>→</span></a>
+    </section>
+
+    <section class="panel" id="issues">
+      <h1>간행본</h1>
+      <div class="rule"></div>
+      <div class="month-list" aria-label="월별 간행본">
+        <button class="month-button active" type="button" data-issue="issue-1">월간이호수</button>
+      </div>
+      <article class="issue issue-selected" id="selected-issue">
+        <div class="cover"><img src="assets/issue-1/1.png" alt="월간이호수 표지"></div>
+        <div class="issue-info">
+          <h2 id="selected-issue-title">월간이호수</h2>
+          <div class="actions">
+            <a class="button primary" id="selected-issue-view" href="assets/issue-1/issue.pdf" target="_blank" rel="noopener">PDF로 보기</a>
+          </div>
+          <div class="download-formats" id="download-formats" aria-label="다운로드 형식"></div>
+        </div>
+      </article>
+      <div class="pdf-embed-wrap">
+        <iframe id="issue-pdf-viewer" src="assets/issue-1/issue.pdf" title="2026년 9월호 PDF 읽기"></iframe>
+      </div>
+    </section>
+  </main>
+
+  <footer>월간이호수 <span>·</span> 이호수의 일상, 처음부터 끝까지 담다.</footer>
+  <script src="script.js"></script>
+</body>
+</html>
