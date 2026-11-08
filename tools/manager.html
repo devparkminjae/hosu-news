@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>월간이호수 간행본 관리</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #111;
+      --muted: #5a5a5a;
+      --line: #d8d8d8;
+      --soft: #f5f5f5;
+      --paper: #fff;
+      --danger: #9b1c1c;
+    }
+    * { box-sizing: border-box; }
+    html { background: var(--paper); }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", Arial, sans-serif;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+    button, input { font: inherit; }
+    button, input[type="file"] { cursor: pointer; }
+    button:focus-visible, input:focus-visible {
+      outline: 3px solid #111;
+      outline-offset: 3px;
+    }
+    ::selection { color: #fff; background: #111; }
+    .shell { width: min(1040px, calc(100% - 32px)); margin: 0 auto; padding: 56px 0 80px; }
+    header { display: flex; align-items: end; justify-content: space-between; gap: 24px; padding-bottom: 24px; border-bottom: 3px solid var(--ink); }
+    h1 { margin: 0; font-size: clamp(1.8rem, 4vw, 3rem); letter-spacing: -0.03em; line-height: 1.12; }
+    .intro { max-width: 64ch; margin: 16px 0 40px; color: var(--muted); font-size: 0.95rem; }
+    .issues { display: grid; gap: 20px; }
+    .issue {
+      display: grid;
+      grid-template-columns: 140px minmax(0, 1fr);
+      gap: 24px;
+      padding: 24px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .cover { width: 140px; aspect-ratio: 3 / 4; object-fit: cover; background: var(--soft); border: 1px solid var(--line); }
+    .cover-empty { display: grid; place-items: center; color: var(--muted); text-align: center; font-size: 0.8rem; }
+    .fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(150px, 0.35fr); gap: 16px; }
+    label { display: grid; gap: 7px; font-size: 0.82rem; }
+    input[type="text"], input[type="month"] {
+      width: 100%; min-height: 46px; padding: 10px 12px; color: var(--ink); background: #fff; border: 1px solid #999; border-radius: 0;
+    }
+    .file-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 18px; }
+    input[type="file"] { width: 100%; padding: 10px; color: var(--muted); background: var(--soft); border: 1px solid var(--line); }
+    .current-file { margin: 12px 0 0; color: var(--muted); font-size: 0.78rem; overflow-wrap: anywhere; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+    .button {
+      min-height: 42px; padding: 9px 15px; color: var(--ink); background: #fff; border: 1px solid var(--ink); border-radius: 0; text-decoration: none;
+    }
+    .button:hover { color: #fff; background: #111; }
+    .button:disabled { cursor: not-allowed; color: #8b8b8b; background: #eee; border-color: #bbb; }
+    .button.primary { color: #fff; background: #111; }
+    .button.primary:hover { background: #333; }
+    .button.danger { color: var(--danger); border-color: var(--danger); }
+    .button.danger:hover { color: #fff; background: var(--danger); }
+    .toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin-top: 36px; padding-top: 24px; border-top: 3px solid var(--ink); }
+    .status { min-height: 28px; margin: 20px 0 0; color: var(--muted); }
+    .status.error { color: var(--danger); }
+    .status.success { color: #176329; }
+    .empty { padding: 48px 0; color: var(--muted); text-align: center; border-bottom: 1px solid var(--line); }
+    @media (max-width: 720px) {
+      .shell { width: min(100% - 24px, 1040px); padding-top: 32px; }
+      header { align-items: start; flex-direction: column; }
+      .issue { grid-template-columns: 92px minmax(0, 1fr); gap: 16px; }
+      .cover { width: 92px; }
+      .fields, .file-fields { grid-template-columns: 1fr; }
+      .issue-content { min-width: 0; }
+      .toolbar .button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <h1>월간이호수<br>간행본 관리</h1>
+      <button class="button" id="close-button" type="button">관리 화면 닫기</button>
+    </header>
+    <p class="intro">제목과 발행월을 고치거나 PDF·표지를 교체할 수 있습니다. 위아래 버튼으로 사이트에 표시되는 순서를 정한 뒤 맨 아래 저장 버튼을 누르세요.</p>
+
+    <section aria-label="간행본 목록">
+      <div class="issues" id="issues"><p class="empty">간행본을 불러오는 중입니다.</p></div>
+    </section>
+
+    <div class="toolbar">
+      <button class="button" id="add-button" type="button">새 간행본 추가</button>
+      <button class="button primary" id="save-button" type="button">변경사항 저장하고 GitHub에 업로드</button>
+    </div>
+    <p class="status" id="status" role="status" aria-live="polite"></p>
+  </main>
+
+  <script>
+    const token = '__MANAGER_TOKEN__';
+    const issuesElement = document.querySelector('#issues');
+    const statusElement = document.querySelector('#status');
+    const saveButton = document.querySelector('#save-button');
+    let publications = [];
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"]/g, character => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[character]));
+    }
+
+    function showStatus(message, type = '') {
+      statusElement.textContent = message;
+      statusElement.className = `status ${type}`;
+    }
+
+    function render() {
+      if (!publications.length) {
+        issuesElement.innerHTML = '<p class="empty">간행본이 없습니다. 새 간행본을 추가해 주세요.</p>';
+        return;
+      }
+      issuesElement.innerHTML = publications.map((issue, index) => {
+        const cover = issue.cover ? `<img class="cover" src="/asset/${encodeURIComponent(issue.cover)}" alt="${escapeHtml(issue.title)} 표지">` : '<div class="cover cover-empty">표지<br>자동 생성</div>';
+        return `
+          <article class="issue" data-index="${index}">
+            ${cover}
+            <div class="issue-content">
+              <div class="fields">
+                <label>사이트 표시 제목<input type="text" data-field="title" value="${escapeHtml(issue.title || '')}" placeholder="2026년 12월호"></label>
+                <label>발행월<input type="month" data-field="month" value="${escapeHtml(issue.month || '')}"></label>
+              </div>
+              <div class="file-fields">
+                <label>${issue.pdf ? 'PDF 교체' : 'PDF 선택'}<input type="file" data-field="pdfFile" accept="application/pdf,.pdf"></label>
+                <label>${issue.cover ? '표지 교체 (선택)' : '표지 선택 (선택)'}<input type="file" data-field="coverFile" accept="image/png,image/jpeg,.png,.jpg,.jpeg"></label>
+              </div>
+              <p class="current-file">${issue.pdf ? `현재 PDF: ${escapeHtml(issue.pdf)}` : '표지를 선택하지 않으면 PDF 첫 페이지로 자동 생성됩니다.'}</p>
+              <div class="actions">
+                <button class="button" type="button" data-action="up" ${index === 0 ? 'disabled' : ''}>위로</button>
+                <button class="button" type="button" data-action="down" ${index === publications.length - 1 ? 'disabled' : ''}>아래로</button>
+                <button class="button danger" type="button" data-action="remove">목록에서 제거</button>
+              </div>
+            </div>
+          </article>`;
+      }).join('');
+    }
+
+    issuesElement.addEventListener('input', event => {
+      const article = event.target.closest('[data-index]');
+      if (!article) return;
+      const issue = publications[Number(article.dataset.index)];
+      const field = event.target.dataset.field;
+      if (field === 'title' || field === 'month') issue[field] = event.target.value;
+      if (field === 'pdfFile') issue.pdfFile = event.target.files[0] || null;
+      if (field === 'coverFile') issue.coverFile = event.target.files[0] || null;
+    });
+
+    issuesElement.addEventListener('click', event => {
+      const button = event.target.closest('button[data-action]');
+      if (!button) return;
+      const index = Number(button.closest('[data-index]').dataset.index);
+      if (button.dataset.action === 'up' && index > 0) [publications[index - 1], publications[index]] = [publications[index], publications[index - 1]];
+      if (button.dataset.action === 'down' && index < publications.length - 1) [publications[index + 1], publications[index]] = [publications[index], publications[index + 1]];
+      if (button.dataset.action === 'remove') {
+        if (!confirm(`${publications[index].title || '이 간행본'}을 사이트 목록에서 제거할까요? 파일은 컴퓨터에 보관됩니다.`)) return;
+        publications.splice(index, 1);
+      }
+      render();
+    });
+
+    document.querySelector('#add-button').addEventListener('click', () => {
+      publications.push({id: `new-${Date.now()}`, title: '', month: '', pdf: '', cover: '', isNew: true});
+      render();
+      issuesElement.lastElementChild?.querySelector('input')?.focus();
+    });
+
+    function fileToUpload(file) {
+      if (!file) return Promise.resolve(null);
+      return new Promise((resolveFile, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolveFile({name: file.name, data: String(reader.result).split(',')[1]});
+        reader.onerror = () => reject(new Error(`${file.name} 파일을 읽지 못했습니다.`));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    saveButton.addEventListener('click', async () => {
+      if (!publications.length) return showStatus('간행본을 한 개 이상 남겨 주세요.', 'error');
+      saveButton.disabled = true;
+      showStatus('파일을 준비하고 있습니다. 창을 닫지 마세요.');
+      try {
+        const prepared = await Promise.all(publications.map(async issue => ({
+          id: issue.id,
+          title: issue.title,
+          month: issue.month,
+          pdfUpload: await fileToUpload(issue.pdfFile),
+          coverUpload: await fileToUpload(issue.coverFile)
+        })));
+        showStatus('저장하고 GitHub에 업로드하고 있습니다.');
+        const response = await fetch('/api/publish', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json', 'X-Manager-Token': token},
+          body: JSON.stringify({publications: prepared})
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || '저장하지 못했습니다.');
+        showStatus(result.message, 'success');
+        if (result.publications) publications = result.publications;
+        render();
+      } catch (error) {
+        showStatus(error.message, 'error');
+      } finally {
+        saveButton.disabled = false;
+      }
+    });
+
+    document.querySelector('#close-button').addEventListener('click', async () => {
+      await fetch('/api/close', {method: 'POST'}).catch(() => {});
+      window.close();
+      document.body.innerHTML = '<main class="shell"><h1>관리 화면을 닫았습니다.</h1><p class="intro">이 탭을 닫아도 됩니다.</p></main>';
+    });
+
+    fetch('/api/publications')
+      .then(response => response.json())
+      .then(result => { publications = result.publications; render(); })
+      .catch(() => { issuesElement.innerHTML = '<p class="empty">간행본을 불러오지 못했습니다. 관리 화면을 닫고 다시 실행해 주세요.</p>'; });
+  </script>
+</body>
+</html>

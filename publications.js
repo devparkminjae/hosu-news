@@ -1,6 +1,7 @@
 window.PUBLICATIONS = [
   {
     "id": "issue-2026-11-preview",
+    "month": "2026-11",
     "title": "2026년 11월호 선공개",
     "pdf": "assets/issue-2/issue.pdf",
     "cover": "assets/issue-2/cover.png",
@@ -15,6 +16,7 @@ window.PUBLICATIONS = [
   },
   {
     "id": "issue-2026-09",
+    "month": "2026-09",
     "title": "2026년 9월호",
     "pdf": "assets/issue-1/issue.pdf",
     "cover": "assets/issue-1/1.png",
