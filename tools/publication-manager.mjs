@@ -25,7 +25,19 @@ function readPublications() {
 }
 
 function writePublications(publications) {
-  writeFileSync(publicationsPath, `window.PUBLICATIONS = ${JSON.stringify(publications, null, 2)};\n`, 'utf8');
+  const nextSource = `window.PUBLICATIONS = ${JSON.stringify(publications, null, 2)};\n`;
+  if (readFileSync(publicationsPath, 'utf8') === nextSource) return false;
+  writeFileSync(publicationsPath, nextSource, 'utf8');
+  return true;
+}
+
+function bumpPublicationsVersion() {
+  const indexPath = join(projectRoot, 'index.html');
+  const source = readFileSync(indexPath, 'utf8');
+  const version = Date.now().toString(36);
+  const updated = source.replace(/src="publications\.js(?:\?v=[^"]*)?"/, `src="publications.js?v=${version}"`);
+  if (source === updated) throw new Error('사이트에서 간행본 데이터 연결을 찾지 못했습니다.');
+  writeFileSync(indexPath, updated, 'utf8');
 }
 
 function send(response, status, body, contentType = 'text/plain; charset=utf-8') {
@@ -164,7 +176,12 @@ async function publish(request, response) {
     const changedPaths = new Set(['publications.js']);
     const usedMonths = new Set();
     const publications = payload.publications.map(issue => formatIssue(issue, existingIssues, changedPaths, usedMonths));
-    writePublications(publications);
+    const publicationsChanged = writePublications(publications);
+    const assetsChanged = [...changedPaths].some(path => path !== 'publications.js');
+    if (publicationsChanged || assetsChanged) {
+      bumpPublicationsVersion();
+      changedPaths.add('index.html');
+    }
 
     const add = run('git', ['add', ...changedPaths]);
     if (add.status !== 0) throw new Error(`Git에 변경사항을 추가하지 못했습니다. ${add.stderr.trim()}`);
