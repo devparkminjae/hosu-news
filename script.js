@@ -23,21 +23,7 @@ document.querySelector('[data-open-tab]').addEventListener('click', event => {
 window.addEventListener('popstate', () => openTab(location.hash.slice(1)));
 openTab(location.hash.slice(1));
 
-// 월별 간행본 목록에 항목을 추가할 때 이 배열에 월과 PDF 경로를 등록합니다.
-const issues = [
-  {id:'issue-2', title:'2026년 11월호 선공개', pdf:'assets/issue-2/issue.pdf', cover:'assets/issue-2/cover.png', downloadName:'월간이호수-2026-11-선공개.pdf', formats:[
-    {label:'PDF', href:'assets/issue-2/issue.pdf', download:'월간이호수-2026-11-선공개.pdf'}
-  ]},
-  {id:'issue-1', title:'2026년 9월호', pdf:'assets/issue-1/issue.pdf', cover:'assets/issue-1/1.png', downloadName:'월간이호수.pdf', formats:[
-    {label:'PDF', href:'assets/issue-1/issue.pdf', download:'월간이호수-2026-09.pdf'},
-    {label:'JPG', href:'assets/issue-1/1.jpg', download:'월간이호수-2026-09-1.jpg'},
-    {label:'JPG', href:'assets/issue-1/2.jpg', download:'월간이호수-2026-09-2.jpg'},
-    {label:'JPG', href:'assets/issue-1/3.jpg', download:'월간이호수-2026-09-3.jpg'},
-    {label:'PNG', href:'assets/issue-1/1.png', download:'월간이호수-2026-09-1.png'},
-    {label:'PNG', href:'assets/issue-1/2.png', download:'월간이호수-2026-09-2.png'},
-    {label:'PNG', href:'assets/issue-1/3.png', download:'월간이호수-2026-09-3.png'}
-  ]}
-];
+const issues = Array.isArray(window.PUBLICATIONS) ? window.PUBLICATIONS : [];
 const issueButtons = document.querySelector('.month-list');
 const selectedIssue = document.querySelector('#selected-issue');
 
@@ -59,4 +45,13 @@ issueButtons.addEventListener('click', event => {
   const button = event.target.closest('[data-issue]');
   if (button) selectIssue(issues.find(issue => issue.id === button.dataset.issue));
 });
-if (issues.length) selectIssue(issues[0]);
+if (issues.length) {
+  const latestIssue = issues[0];
+  selectIssue(latestIssue);
+  document.querySelector('#advance-button').textContent = `${latestIssue.title} 보기`;
+  document.querySelector('#advance-title').textContent = latestIssue.title;
+  document.querySelector('#advance-pdf').src = latestIssue.pdf;
+  document.querySelector('#advance-pdf').title = `${latestIssue.title} PDF 읽기`;
+  document.querySelector('#advance-download').href = latestIssue.pdf;
+  document.querySelector('#advance-download').download = latestIssue.downloadName;
+}
