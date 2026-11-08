@@ -39,6 +39,7 @@ export function createPdfReader(root) {
   let currentPage = 1;
   let zoom = 1;
   let loadSequence = 0;
+  let swipeStart = null;
 
   function updateControls() {
     const total = pdfDocument?.numPages || 1;
@@ -131,6 +132,27 @@ export function createPdfReader(root) {
       currentPage += 1;
       renderPage();
     }
+  });
+
+  stage.addEventListener('pointerdown', event => {
+    if (event.pointerType !== 'touch' || zoom > 1) return;
+    swipeStart = {x: event.clientX, y: event.clientY, pointerId: event.pointerId};
+  });
+
+  stage.addEventListener('pointerup', event => {
+    if (!swipeStart || swipeStart.pointerId !== event.pointerId || !pdfDocument) return;
+    const distanceX = event.clientX - swipeStart.x;
+    const distanceY = event.clientY - swipeStart.y;
+    swipeStart = null;
+    if (Math.abs(distanceX) < 55 || Math.abs(distanceX) < Math.abs(distanceY) * 1.25) return;
+    if (distanceX < 0 && currentPage < pdfDocument.numPages) currentPage += 1;
+    else if (distanceX > 0 && currentPage > 1) currentPage -= 1;
+    else return;
+    renderPage();
+  });
+
+  stage.addEventListener('pointercancel', () => {
+    swipeStart = null;
   });
 
   updateControls();
