@@ -18,6 +18,15 @@ function run(command, args) {
   return spawnSync(command, args, {cwd: projectRoot, encoding: 'utf8'});
 }
 
+function syncFromGitHub() {
+  if (run('git', ['status', '--porcelain']).stdout.trim()) {
+    return '저장되지 않은 파일이 있어 GitHub 최신 내용을 가져오지 않았습니다.';
+  }
+  const result = run('git', ['pull', '--ff-only', 'origin', 'main']);
+  if (result.status !== 0) return 'GitHub 최신 내용을 가져오지 못해 컴퓨터에 저장된 목록을 표시합니다.';
+  return '';
+}
+
 function readPublications() {
   const source = readFileSync(publicationsPath, 'utf8');
   const json = source.replace(/^window\.PUBLICATIONS\s*=\s*/, '').replace(/;\s*$/, '');
@@ -205,7 +214,7 @@ const server = createServer(async (request, response) => {
   }
   if (request.method === 'GET' && url.pathname === '/api/publications') {
     const publications = readPublications().map(issue => ({...issue, month: inferMonth(issue)}));
-    return sendJson(response, 200, {publications});
+    return sendJson(response, 200, {publications, notice: startupNotice});
   }
   if (request.method === 'GET' && url.pathname.startsWith('/asset/')) {
     const assetPath = safeProjectPath(decodeURIComponent(url.pathname.slice('/asset/'.length)));
@@ -222,6 +231,8 @@ const server = createServer(async (request, response) => {
   }
   send(response, 404, '페이지를 찾을 수 없습니다.');
 });
+
+const startupNotice = syncFromGitHub();
 
 server.on('error', error => {
   if (error.code === 'EADDRINUSE') {

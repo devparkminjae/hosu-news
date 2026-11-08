@@ -221,7 +221,11 @@
 
     fetch('/api/publications')
       .then(response => response.json())
-      .then(result => { publications = result.publications; render(); })
+      .then(result => {
+        publications = result.publications;
+        render();
+        if (result.notice) showStatus(result.notice, 'error');
+      })
       .catch(() => { issuesElement.innerHTML = '<p class="empty">간행본을 불러오지 못했습니다. 관리 화면을 닫고 다시 실행해 주세요.</p>'; });
   </script>
 </body>
