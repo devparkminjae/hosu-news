@@ -62,7 +62,8 @@ export function createPdfReader(root) {
       const page = await pdfDocument.getPage(currentPage);
       const baseViewport = page.getViewport({scale: 1});
       const availableWidth = Math.max(260, stage.clientWidth - 48);
-      const fitScale = Math.min(1.4, availableWidth / baseViewport.width);
+      const availableHeight = Math.max(260, stage.clientHeight - 48);
+      const fitScale = Math.min(1.4, availableWidth / baseViewport.width, availableHeight / baseViewport.height);
       const viewport = page.getViewport({scale: fitScale * zoom});
       const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
 
