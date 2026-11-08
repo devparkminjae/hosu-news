@@ -1,3 +1,5 @@
+import {createPdfReader} from './pdf-viewer.js';
+
 const tabs = [...document.querySelectorAll('[data-tab]')];
 const panels = [...document.querySelectorAll('.panel')];
 
@@ -26,6 +28,8 @@ openTab(location.hash.slice(1));
 const issues = Array.isArray(window.PUBLICATIONS) ? window.PUBLICATIONS : [];
 const issueButtons = document.querySelector('.month-list');
 const selectedIssue = document.querySelector('#selected-issue');
+const issuePdfReader = createPdfReader(document.querySelector('#issue-pdf-reader'));
+const advancePdfReader = createPdfReader(document.querySelector('#advance-pdf-reader'));
 
 function selectIssue(issue) {
   document.querySelectorAll('.month-button').forEach(button => button.classList.toggle('active', button.dataset.issue === issue.id));
@@ -34,9 +38,7 @@ function selectIssue(issue) {
   document.querySelector('#selected-issue-title').textContent = issue.title;
   const viewLink = document.querySelector('#selected-issue-view');
   viewLink.href = issue.pdf;
-  const pdfViewer = document.querySelector('#issue-pdf-viewer');
-  pdfViewer.src = issue.pdf;
-  pdfViewer.title = `${issue.title} PDF 읽기`;
+  issuePdfReader.load(issue.pdf, issue.title, issue.downloadName);
   document.querySelector('#download-formats').innerHTML = issue.formats.map(file => `<a class="button" href="${file.href}" download="${file.download}">${file.label} 다운로드</a>`).join('');
 }
 
@@ -50,8 +52,5 @@ if (issues.length) {
   selectIssue(latestIssue);
   document.querySelector('#advance-button').textContent = `${latestIssue.title} 보기`;
   document.querySelector('#advance-title').textContent = latestIssue.title;
-  document.querySelector('#advance-pdf').src = latestIssue.pdf;
-  document.querySelector('#advance-pdf').title = `${latestIssue.title} PDF 읽기`;
-  document.querySelector('#advance-download').href = latestIssue.pdf;
-  document.querySelector('#advance-download').download = latestIssue.downloadName;
+  advancePdfReader.load(latestIssue.pdf, latestIssue.title, latestIssue.downloadName);
 }

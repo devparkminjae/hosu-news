@@ -30,8 +30,7 @@
       </div>
       <div class="advance-preview" id="advance-preview">
         <h2 id="advance-title">최신 간행본</h2>
-        <iframe id="advance-pdf" title="최신 간행본 PDF 읽기"></iframe>
-        <a class="button" id="advance-download" href="#" download>PDF 다운로드</a>
+        <div class="pdf-reader" id="advance-pdf-reader" aria-label="최신 간행본 PDF 읽기"></div>
       </div>
     </section>
 
@@ -51,14 +50,12 @@
           <div class="download-formats" id="download-formats" aria-label="다운로드 형식"></div>
         </div>
       </article>
-      <div class="pdf-embed-wrap">
-        <iframe id="issue-pdf-viewer" src="assets/issue-2/issue.pdf" title="2026년 11월호 선공개 PDF 읽기"></iframe>
-      </div>
+      <div class="pdf-reader" id="issue-pdf-reader" aria-label="선택한 간행본 PDF 읽기"></div>
     </section>
   </main>
 
   <footer>월간이호수 <span>·</span>© 2026 박민재·박민욱 무단 배포 및 복사 금지. All rights reserved.</footer>
-  <script src="publications.js?v=66873d0"></script>
-  <script src="script.js"></script>
+  <script src="publications.js?v=80c259e"></script>
+  <script type="module" src="script.js?v=pdf-reader-1"></script>
 </body>
 </html>
