@@ -9,3 +9,5 @@ body{font-weight:600}.logo,.panel h1,.panel h2,.issue-info h2{font-weight:700}.l
 @media(max-width:600px){.pdf-stage{touch-action:pan-y pinch-zoom}}
 .pdf-stage{height:min(76vh,780px);min-height:560px;align-items:center}
 @media(max-width:600px){.pdf-stage{height:62vh;min-height:440px}}
+.pdf-stage{height:auto;min-height:0;max-height:none}
+@media(max-width:600px){.pdf-stage{height:auto;min-height:0}}

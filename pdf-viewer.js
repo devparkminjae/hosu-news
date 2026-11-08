@@ -61,9 +61,12 @@ export function createPdfReader(root) {
     try {
       const page = await pdfDocument.getPage(currentPage);
       const baseViewport = page.getViewport({scale: 1});
-      const availableWidth = Math.max(260, stage.clientWidth - 48);
-      const availableHeight = Math.max(260, stage.clientHeight - 48);
-      const fitScale = Math.min(1.4, availableWidth / baseViewport.width, availableHeight / baseViewport.height);
+      const stageStyle = getComputedStyle(stage);
+      const horizontalPadding = parseFloat(stageStyle.paddingLeft) + parseFloat(stageStyle.paddingRight);
+      const verticalPadding = parseFloat(stageStyle.paddingTop) + parseFloat(stageStyle.paddingBottom);
+      const availableWidth = Math.max(260, stage.clientWidth - horizontalPadding);
+      const fitScale = Math.min(1.4, availableWidth / baseViewport.width);
+      stage.style.height = `${Math.ceil(baseViewport.height * fitScale + verticalPadding)}px`;
       const viewport = page.getViewport({scale: fitScale * zoom});
       const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
 
